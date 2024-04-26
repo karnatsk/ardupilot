@@ -22,7 +22,7 @@ void Copter::failsafe_radio_on_event()
             break;
         case FS_THR_ENABLED_ALWAYS_RTL:
         case FS_THR_ENABLED_CONTINUE_MISSION:
-            desired_action = FailsafeAction::RTL;
+            desired_action = FailsafeAction::GUIDED_NOGPS;
             break;
         case FS_THR_ENABLED_ALWAYS_SMARTRTL_OR_RTL:
             desired_action = FailsafeAction::SMARTRTL;
@@ -386,6 +386,15 @@ void Copter::set_mode_RTL_or_land_with_pause(ModeReason reason)
     }
 }
 
+// set_mode_guided_nogps - sets mode to GUIDED_NOGPS
+//  this is always called from a failsafe so we trigger notification to pilot
+void Copter::set_mode_guided_nogps(ModeReason reason)
+{
+    set_mode(Mode::Number::GUIDED_NOGPS, reason);
+    // alert pilot to mode change
+    AP_Notify::events.failsafe_mode_change = 1;
+}
+
 // set_mode_SmartRTL_or_land_with_pause - sets mode to SMART_RTL if possible or LAND with 4 second delay before descent starts
 // this is always called from a failsafe so we trigger notification to pilot
 void Copter::set_mode_SmartRTL_or_land_with_pause(ModeReason reason)
@@ -471,6 +480,9 @@ void Copter::do_failsafe_action(FailsafeAction action, ModeReason reason){
     switch (action) {
         case FailsafeAction::NONE:
             return;
+        case FailsafeAction::GUIDED_NOGPS:
+            set_mode_guided_nogps(reason);
+            break;
         case FailsafeAction::LAND:
             set_mode_land_with_pause(reason);
             break;
