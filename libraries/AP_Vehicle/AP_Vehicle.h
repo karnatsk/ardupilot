@@ -80,11 +80,42 @@
 #include <AP_Gripper/AP_Gripper.h>
 #endif
 
+
+class VehicleTargetBbox{
+public:
+    float x1;
+    float y1;
+    float x2;
+    float y2;
+    float confidence;
+    bool is_valid;
+
+    VehicleTargetBbox(float _x1, float _y1, float _x2, float _y2, float _confidence, bool _is_valid){
+        x1 = _x1;
+        y1 = _y1;
+        x2 = _x2;
+        y2 = _y2;
+        confidence = _confidence;
+        is_valid = _is_valid;
+    }
+
+    VehicleTargetBbox(){
+        x1 = 0;
+        y1 = 0;
+        x2 = 0;
+        y2 = 0;
+        confidence = 0;
+        is_valid = false;
+    }
+};
+
+
 class AP_DDS_Client;
 
 class AP_Vehicle : public AP_HAL::HAL::Callbacks {
 
 public:
+    VehicleTargetBbox target_bbox;
 
     AP_Vehicle() {
         if (_singleton) {
@@ -92,6 +123,7 @@ public:
         }
         AP_Param::setup_object_defaults(this, var_info);
         _singleton = this;
+        target_bbox = VehicleTargetBbox();
     }
 
     /* Do not allow copies */

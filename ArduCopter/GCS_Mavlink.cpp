@@ -1470,11 +1470,36 @@ void GCS_MAVLINK_Copter::handle_message_set_position_target_global_int(const mav
 }
 #endif  // MODE_GUIDED_ENABLED == ENABLED
 
+
+typedef struct __mavlink_set_target_bbox_t {
+    float x1;
+    float y1;
+    float x2;
+    float y2;
+    float confidence;
+} mavlink_set_target_bbox_t;
+
+static inline void mavlink_msg_set_target_bbox_decode(const mavlink_message_t* msg, mavlink_set_target_bbox_t* set_attitude_target)
+{
+    set_attitude_target->x1 = _MAV_RETURN_float(msg, 2);
+    set_attitude_target->y1 = _MAV_RETURN_float(msg, 6);
+    set_attitude_target->x2 = _MAV_RETURN_float(msg, 10);
+    set_attitude_target->y2 = _MAV_RETURN_float(msg, 14);
+    set_attitude_target->confidence = _MAV_RETURN_float(msg, 18);
+}
+
 void GCS_MAVLINK_Copter::handle_message(const mavlink_message_t &msg)
 {
 
     switch (msg.msgid) {
 #if MODE_GUIDED_ENABLED == ENABLED
+    case MAVLINK_MSG_ID_DATA96:   // MAV ID: 172
+    {
+        mavlink_set_target_bbox_t packet;
+        mavlink_msg_set_target_bbox_decode(&msg, &packet);
+        copter.target_bbox = VehicleTargetBbox(packet.x1, packet.y1, packet.x2, packet.y2, packet.confidence, true);
+        break;
+    }
     case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET:
         handle_message_set_attitude_target(msg);
         break;

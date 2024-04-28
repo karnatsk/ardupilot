@@ -1427,7 +1427,7 @@ char AP_OSD_Screen::get_arrow_font_index(int32_t angle_cd)
     // if using BF font table must translate arrows
     if (check_option(AP_OSD::OPTION_BF_ARROWS)) {
         angle_cd = angle_cd > 18000? 54000 - angle_cd : 18000- angle_cd;
-    } 
+    }
     return SYMBOL(SYM_ARROW_START) + ((angle_cd + interval / 2) / interval) % SYMBOL(SYM_ARROW_COUNT);
 }
 
@@ -1743,6 +1743,49 @@ void AP_OSD_Screen::draw_horizon(uint8_t x, uint8_t y)
 
     if (!check_option(AP_OSD::OPTION_DISABLE_CROSSHAIR)) {
         backend->write(x-1,y, false, "%c%c%c", SYMBOL(SYM_AH_CENTER_LINE_LEFT), SYMBOL(SYM_AH_CENTER), SYMBOL(SYM_AH_CENTER_LINE_RIGHT));
+    }
+
+    VehicleTargetBbox target_bbox = AP::vehicle()->target_bbox;
+    if (target_bbox.is_valid) {
+        const int height = 16;
+        const int width = 30;
+        const bool fully_X = true;
+        int x1 = floorf(target_bbox.x1 * width);
+        int y1 = floorf(target_bbox.y1 * height);
+        int x2 = ceilf(target_bbox.x2 * width) - 1;
+        int y2 = ceilf(target_bbox.y2 * height) - 1;
+
+        if(fully_X) {
+            for (int i = x1; i <= x2; i++) {
+                for(int j = y1; j <= y2; j++) {
+                    backend->write(i, j, true, "X");
+                }
+            }
+        }
+        else {
+            int center_x = roundf((target_bbox.x1 + target_bbox.x2) / 2 * width);
+            int center_y = roundf((target_bbox.y1 + target_bbox.y2) / 2 * height);
+
+            for (int i = x1 + 1; i <= x2 - 1; i++) {
+                backend->write(i, y1, false, "-");
+                backend->write(i, y2, false, "-");
+            }
+            for (int i = y1 + 1; i <= y2 - 1; i++) {
+                backend->write(x1, i, false, "|");
+                backend->write(x2, i, false, "|");
+            }
+            for (int i = x1 + 1; i <= x2 - 1; i++) {
+                for (int j = y1 + 1; j <= y2 - 1; j++) {
+                    backend->write(i, j, false, " ");
+                }
+            }
+            backend->write(center_x, center_y, true, "X");
+
+            backend->write(x1, y1, false, "+");
+            backend->write(x2, y1, false, "+");
+            backend->write(x1, y2, false, "+");
+            backend->write(x2, y2, false, "+");
+        }
     }
 
 }
