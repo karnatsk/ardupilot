@@ -1592,6 +1592,20 @@ void AP_OSD_Screen::draw_horizon(uint8_t x, uint8_t y)
         backend->write(x-1,y, false, "%c%c%c", SYMBOL(SYM_AH_CENTER_LINE_LEFT), SYMBOL(SYM_AH_CENTER), SYMBOL(SYM_AH_CENTER_LINE_RIGHT));
     }
 
+    VehicleTargetBbox target_bbox = AP::vehicle()->target_bbox;
+    if (target_bbox.is_valid) {
+        const int height = 16;
+        const int width = 30;
+        float x_f = (target_bbox.x1 + target_bbox.x2) / 2 * width + 0.25f;
+        int x_i = floorf(x_f);
+        char c = (x_f - x_i) * SYMBOL(SYM_AH_V_COUNT);
+        c = SYMBOL(SYM_AH_V_START) + c;
+
+        for(int j = 0; j < height; j++) {
+            backend->write(x_i, j, false, "%c", c);
+        }
+    }
+
 }
 
 void AP_OSD_Screen::draw_distance(uint8_t x, uint8_t y, float distance)
