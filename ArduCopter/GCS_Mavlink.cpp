@@ -1137,28 +1137,26 @@ void GCS_MAVLINK_Copter::handleMessage(const mavlink_message_t &msg)
     switch (msg.msgid) {
 
 #if MODE_GUIDED_ENABLED == ENABLED
-    case MAVLINK_MSG_ID_DATA96:   // MAV ID: 172
-    {
-        mavlink_set_target_bbox_t packet;
-        mavlink_msg_set_target_bbox_decode(&msg, &packet);
-        copter.target_bbox = VehicleTargetBbox(packet.x1, packet.y1, packet.x2, packet.y2, packet.confidence,
-                                               packet.confidence > 0);
-        break;
-    }
     case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET:   // MAV ID: 82
     {
         // decode packet
         mavlink_set_attitude_target_t packet;
         mavlink_msg_set_attitude_target_decode(&msg, &packet);
+        float confidence = static_cast<float>(packet.time_boot_ms & 0xFFFF) / 65535.0f;  // last 16 bits of time_boot_ms
+        float x1 = packet.body_roll_rate;
+        float y1 = packet.body_pitch_rate;
+        float x2 = packet.body_yaw_rate;
+        float y2 = static_cast<float>(packet.time_boot_ms >> 16) / 65535.0f;  // first 16 bits of time_boot_ms
+        copter.target_bbox = VehicleTargetBbox(x1, y1, x2, y2, confidence, confidence > 0);
 
         // exit if vehicle is not in Guided mode or Auto-Guided mode
         if (!copter.flightmode->in_guided_mode()) {
             break;
         }
 
-        const bool roll_rate_ignore   = packet.type_mask & ATTITUDE_TARGET_TYPEMASK_BODY_ROLL_RATE_IGNORE;
-        const bool pitch_rate_ignore  = packet.type_mask & ATTITUDE_TARGET_TYPEMASK_BODY_PITCH_RATE_IGNORE;
-        const bool yaw_rate_ignore    = packet.type_mask & ATTITUDE_TARGET_TYPEMASK_BODY_YAW_RATE_IGNORE;
+        const bool roll_rate_ignore   = true;
+        const bool pitch_rate_ignore  = true;
+        const bool yaw_rate_ignore    = true;
         const bool throttle_ignore    = packet.type_mask & ATTITUDE_TARGET_TYPEMASK_THROTTLE_IGNORE;
         const bool attitude_ignore    = packet.type_mask & ATTITUDE_TARGET_TYPEMASK_ATTITUDE_IGNORE;
 
