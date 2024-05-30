@@ -1596,13 +1596,28 @@ void AP_OSD_Screen::draw_horizon(uint8_t x, uint8_t y)
     if (target_bbox.is_valid) {
         const int height = 16;
         const int width = 30;
-        float x_f = (target_bbox.x1 + target_bbox.x2) / 2 * width + 0.25f;
-        int x_i = floorf(x_f);
-        char c = (x_f - x_i) * SYMBOL(SYM_AH_V_COUNT);
-        c = SYMBOL(SYM_AH_V_START) + c;
+        float x_1 = target_bbox.x1 * width + 0.25f;
+        float x_2 = target_bbox.x2 * width + 0.25f;
+        float y_1 = target_bbox.y1 * height + 0.25f;
+        float y_2 = target_bbox.y2 * height + 0.25f;
 
-        for(int j = 0; j < height; j++) {
-            backend->write(x_i, j, false, "%c", c);
+        int x_1_i = floorf(x_1);
+        int x_2_i = floorf(x_2);
+        int y_1_i = floorf(y_1);
+        int y_2_i = floorf(y_2);
+
+        char c_x1 = SYMBOL(SYM_AH_V_START) + (x_1 - x_1_i) * SYMBOL(SYM_AH_V_COUNT);
+        char c_x2 = SYMBOL(SYM_AH_V_START) + (x_2 - x_2_i) * SYMBOL(SYM_AH_V_COUNT);
+        char c_y1 = SYMBOL(SYM_AH_H_START) + (y_1 - y_1_i) * SYMBOL(SYM_AH_H_COUNT);
+        char c_y2 = SYMBOL(SYM_AH_H_START) + (y_2 - y_2_i) * SYMBOL(SYM_AH_H_COUNT);
+
+        for(int j = y_1_i; j < y_2_i; j++) {
+            backend->write(x_1_i, j, false, "%c", c_x1);
+            backend->write(x_2_i, j, false, "%c", c_x2);
+        }
+        for(int i = x_1_i; i < x_2_i; i++) {
+            backend->write(i, y_1_i, false, "%c", c_y1);
+            backend->write(i, y_2_i, false, "%c", c_y2);
         }
     }
 
