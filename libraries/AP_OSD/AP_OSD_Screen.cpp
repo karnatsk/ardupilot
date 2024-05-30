@@ -1602,9 +1602,9 @@ void AP_OSD_Screen::draw_horizon(uint8_t x, uint8_t y)
         float y_2 = target_bbox.y2 * height + 0.25f;
 
         int x_1_i = floorf(x_1);
-        int x_2_i = floorf(x_2);
+        int x_2_i = ceilf(x_2);
         int y_1_i = floorf(y_1);
-        int y_2_i = floorf(y_2);
+        int y_2_i = ceilf(y_2);
 
         char c_x1 = SYMBOL(SYM_AH_V_START) + (x_1 - x_1_i) * SYMBOL(SYM_AH_V_COUNT);
         char c_x2 = SYMBOL(SYM_AH_V_START) + (x_2 - x_2_i) * SYMBOL(SYM_AH_V_COUNT);
